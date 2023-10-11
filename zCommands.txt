@@ -1,0 +1,144 @@
+Kubernates (K8S)
+
+- Define "rules"
+- Scale Containers
+- Manage Instances
+
+
+- Environment Variables
+- Password and Secrets
+- Define computational resources
+- Health Check
+- Load Balance
+- SSL/TLS
+- Domain (custom name to IP)
+- Deploy Strategy (Blue/Green, Canary)
+- File Storage
+
+
+Stack:
+        Deployment
+            Replica Set
+Service -------> POD
+                    Container
+
+Service = Load Balance
+It's possible to define replica set images inside Deployment
+That means change Deployment will create a new Replicaset
+
+New Replicasets create the PODs with Container images
+
+Port Forwarding = Similar to Docker
+
+=================================================================
+
+1
+Download Kind
+curl.exe -Lo kind-windows-amd64.exe https://kind.sigs.k8s.io/dl/v0.20.0/kind-windows-amd64
+
+2
+Rename to kind.exe
+
+3
+Start Docker
+
+4
+kind.exe create cluster
+Will create a new cluste
+Will download some images and "prepare nodes"
+
+5
+kubectl cluster-info --context kind-kind
+You must access the "cluster context" so all commands will be applied within this context
+
+6
+kubectl get nodes
+Only one node
+In production you need at least 3
+
+7
+To create a new POD, use pod.yaml
+
+8
+Apply this pod.yaml
+kubectl apply -f pod.yaml
+*-f = file
+
+9
+Get Active PODs
+kubectl get pods
+
+10
+kubectl delete pod nginx
+will delete
+
+11
+Create replicaset.yaml
+"selector >> matchLabels >> app: nginx" means that the Replicaset will be watching for the "nginx" pods
+So to this work, our template inside de replicaset.yaml shoud have the same label (nginx)
+The template tag here is similar to the "pod.yaml", so the template cuold mean "pod template" (template for the pods, not for the replicaset)
+
+Will be searched for the "LABELS" and not for the "NAMES"
+
+12
+kubectl apply -f replicaset.yaml
+
+13
+kubectl get rs
+List replicasets
+
+13.1
+kubectl get pods
+*The pod name will have a "randon final word" because it was created by replicaset.
+
+14
+If we delete the pod, since replicaset is "watching" his pods, another one will be create with another random final word.
+nginx-replicaset-frv5h
+
+15
+If we run kubectl get pods after the "delete"
+You will see a new pod (new random final word)
+
+16
+Include a new tag inside replicaset.yaml called "replicas"
+replicas: 10
+Now, if we apply this new yaml, it will be created 10 pods
+
+17
+If you run kubectl get pods several times, you will notice every pod starting
+
+18
+kubectl port-forward pod/nginx-replicaset-25wsq 8080:80
+"link" localhost:8080 to port 80 of specific pod
+go to browser and access http://localhost:8080/, you will seed nginx
+
+19
+If you change the replicaset image of pods, and aplly it,
+WONT BE CREATED NEW PODS.
+Because replicaset check the number of pods before creating new one.
+It wont "delete" and "create" or simple "recreate" the current pods.
+
+If you want to achieve this, you need to create the kind "Deployment".
+All you have to do is create a .yaml file where the "kind" is "Deployment"
+
+20
+kubectl delete rs nginx-replicaset
+Delete replicaset (and all it's pods)
+
+21
+kubectl apply -f deployment.yaml
+Will create the deployment
+Will create the replicaset (from deployment)
+Will create the pods  (from replciaset)
+
+22
+kubectl get deployments
+
+23
+kubectl get rs
+
+24
+kubectl get pods
+
+25
+now if you change de deployment.yml image, all pods will be affected
