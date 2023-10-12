@@ -142,3 +142,40 @@ kubectl get pods
 
 25
 now if you change de deployment.yml image, all pods will be affected
+
+26
+Service
+kind: Service
+
+selector: will search for "app: nginx"
+port: is the service port
+targetPort: is the POD's port
+
+27
+kubectl apply -f service.yaml
+
+28
+kubectl get service
+You will have 2 service, the main kubernetes service and the custom new one
+The custom one have a "CLUSTER-IP" that means a "local ip inside kubernetes local network".
+
+29
+Now you can do the port forwarding to nginx-service so it will "load balance" between pods with "app: nginx"
+kubectl port-forward svc/nginx-service 8080:80
+8080 from localhost
+to
+80 from service
+to
+80 from pod 
+
+!!!REMEMBER, SELECTOR MUST MATCH POD LABELS (inside deployment in this case, under template tree)
+
+30
+The service has it's own name.
+So if the IP of the service change, all other things could still run because the ref is the name and not the IP.
+Since k8s have default name resolution
+
+31
+If you want to expode this to the INERNET,
+you maut change the "type" to "LoadBalancer".
+Will keep the same name and IP, but the "EXTERNAL-IP" could be filled by AWS for example.
